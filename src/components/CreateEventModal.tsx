@@ -13,6 +13,9 @@ export default function CreateEventModal({ onClose, onCreate }: Props) {
   const [title, setTitle] = useState("");
   const [type, setType] = useState<EventType>("BETTING");
   const [stakeAmount, setStakeAmount] = useState("");
+  
+  // New State: Duration (default 24 hours in ms)
+  const [duration, setDuration] = useState(24 * 60 * 60 * 1000); 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +29,8 @@ export default function CreateEventModal({ onClose, onCreate }: Props) {
       stakeAmount: type === 'STAKING' ? stakeAmount : undefined,
       poolTotal: "0",
       createdAt: Date.now(),
-      participants: [], // Start empty
+      endsAt: Date.now() + duration, // Calculate End Time
+      participants: [], 
     };
 
     onCreate(newEvent);
@@ -45,6 +49,22 @@ export default function CreateEventModal({ onClose, onCreate }: Props) {
               className="w-full bg-black/40 border border-gray-700 rounded-lg p-3 text-white focus:border-blue-500 outline-none"
               value={title} onChange={(e) => setTitle(e.target.value)}
             />
+          </div>
+
+          {/* DURATION SELECTOR */}
+          <div>
+            <label className="block text-gray-400 text-sm mb-1">Duration</label>
+            <select 
+              className="w-full bg-black/40 border border-gray-700 rounded-lg p-3 text-white focus:border-blue-500 outline-none appearance-none"
+              value={duration}
+              onChange={(e) => setDuration(Number(e.target.value))}
+            >
+              <option value={10 * 60 * 1000}>10 Minutes (Test)</option>
+              <option value={60 * 60 * 1000}>1 Hour</option>
+              <option value={24 * 60 * 60 * 1000}>24 Hours</option>
+              <option value={3 * 24 * 60 * 60 * 1000}>3 Days</option>
+              <option value={7 * 24 * 60 * 60 * 1000}>1 Week</option>
+            </select>
           </div>
 
           <div className="grid grid-cols-2 gap-2 bg-black/40 p-1 rounded-lg">

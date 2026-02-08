@@ -55,7 +55,7 @@ export default function Home() {
             </p>
 
             <a 
-              href="https://app.ens.domains" 
+              href="https://sepolia.app.ens.domains" 
               target="_blank"
               className="block w-full bg-white text-black font-bold text-center py-4 rounded-xl hover:bg-gray-200 transition mb-3"
             >
