@@ -40,12 +40,22 @@ export default function Dashboard() {
     setEvents([
       { 
         id: "evt_101", 
-        title: "ETH to flip BTC", 
+        title: "ETH will go to 4000", 
         type: "BETTING", 
         creatorAddress: "0x123...mock", 
         poolTotal: "12.5", 
         createdAt: Date.now(), 
-        endsAt: Date.now() + 172800000, // +2 days
+        endsAt: Date.now() + 72800000,
+        participants: [] 
+      },
+      { 
+        id: "evt_102", 
+        title: "Exclusive pool event entry", 
+        type: "STAKING", 
+        creatorAddress: "0x123...mock", 
+        stakeAmount: "0.1", 
+        createdAt: Date.now(), 
+        endsAt: Date.now() + 72800000,
         participants: [] 
       },
     ]);
