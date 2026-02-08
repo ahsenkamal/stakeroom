@@ -48,7 +48,7 @@ export default function Home() {
             
             <h2 className="text-2xl font-bold text-center mb-2 text-white">Missing Identity</h2>
             <p className="text-gray-400 text-center mb-8">
-              Your wallet is connected, but you don't have an ENS name. Stakeroom is built on reputation.
+              Your wallet is connected, but you don't have an ENS name.
             </p>
 
             <a 

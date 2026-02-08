@@ -1,4 +1,3 @@
-// services/yellow.ts
 import { Client } from 'yellow-ts';
 import { createAppSessionMessage, RPCProtocolVersion } from '@erc7824/nitrolite';
 import { keccak256, toBytes } from 'viem'; 
