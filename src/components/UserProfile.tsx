@@ -31,7 +31,6 @@ export default function UserProfile({ onMissingEns }: UserProfileProps) {
 
   return (
     <div className="flex items-center gap-3 bg-gray-800 border border-gray-700 rounded-full pl-2 pr-4 py-1.5">
-      {/* Avatar */}
       <div className="h-8 w-8 rounded-full overflow-hidden bg-gradient-to-r from-blue-500 to-purple-600">
         {ensAvatar ? (
           <img src={ensAvatar} alt="ENS" className="h-full w-full object-cover" />
@@ -42,7 +41,6 @@ export default function UserProfile({ onMissingEns }: UserProfileProps) {
         )}
       </div>
 
-      {/* Name Display */}
       <div className="flex flex-col">
         <span className="font-bold text-white text-xs">
           {ensName || `${address?.slice(0, 6)}...${address?.slice(-4)}`}

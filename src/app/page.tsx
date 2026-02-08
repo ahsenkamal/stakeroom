@@ -26,18 +26,15 @@ export default function Home() {
           stakeroom
         </h1>
         
-        {/* Pass the handler */}
         <UserProfile onMissingEns={handleMissingEns} />
       </nav>
 
       <Dashboard />
 
-      {/* Popup */}
       {showEnsPopup && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-gray-900 border border-gray-700 w-full max-w-md p-8 rounded-3xl shadow-2xl relative">
             
-            {/* Close Button (X) */}
             <button 
               onClick={handleClosePopup}
               className="absolute top-4 right-4 text-gray-500 hover:text-white transition"
@@ -62,7 +59,6 @@ export default function Home() {
               Get an ENS Name ↗
             </a>
             
-            {/* Continue Button */}
             <button 
               onClick={handleClosePopup}
               className="block w-full text-gray-500 hover:text-white py-2 text-sm transition"

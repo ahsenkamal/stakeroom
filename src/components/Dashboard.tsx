@@ -6,7 +6,6 @@ import ActionModal from "./ActionModal";
 import CreatorBadge from "./CreatorBadge"; 
 import { Event } from "../types";
 
-// Helper to format time
 const getTimeRemaining = (endsAt: number) => {
   const total = endsAt - Date.now();
   if (total <= 0) return "ENDED";
@@ -17,7 +16,7 @@ const getTimeRemaining = (endsAt: number) => {
 
   if (days > 0) return `${days}d ${hours}h left`;
   if (hours > 0) return `${hours}h ${minutes}m left`;
-  return `${minutes}m left`; // Less than 1 hour
+  return `${minutes}m left`; 
 };
 
 export default function Dashboard() {
@@ -27,15 +26,13 @@ export default function Dashboard() {
   const [viewMode, setViewMode] = useState<'ALL' | 'MY'>('ALL'); 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [now, setNow] = useState(Date.now()); // For live countdown
+  const [now, setNow] = useState(Date.now());
 
-  // Tick the clock every minute so "Time Remaining" updates
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 60000);
     return () => clearInterval(timer);
   }, []);
 
-  // Initialize with dummy data (Expire in 2 days)
   useEffect(() => {
     setEvents([
       { 
@@ -81,7 +78,6 @@ export default function Dashboard() {
   return (
     <div className="w-full max-w-6xl mx-auto px-6 py-10">
       
-      {/* Header (Same as before) */}
       <div className="flex flex-col gap-6 mb-10">
         <div className="flex justify-between gap-4">
           <input
@@ -98,7 +94,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredEvents.map((event) => {
           const timeLeft = getTimeRemaining(event.endsAt);
@@ -107,14 +102,12 @@ export default function Dashboard() {
           return (
             <div key={event.id} className={`bg-gray-900 border p-6 rounded-2xl relative group transition ${isExpired ? 'border-gray-800 opacity-70' : 'border-gray-800 hover:border-gray-600'}`}>
               
-              {/* STATUS BADGE (Time Remaining) */}
               <div className={`absolute top-4 right-4 text-[10px] font-bold px-2 py-1 rounded border ${
                 isExpired ? 'bg-red-500/10 text-red-500 border-red-500/20' : 'bg-green-500/10 text-green-400 border-green-500/20'
               }`}>
                 {timeLeft}
               </div>
 
-              {/* Delete Button */}
               {address && event.creatorAddress === address && (
                 <button onClick={(e) => handleDelete(e, event.id)} className="absolute top-4 right-20 text-gray-600 hover:text-red-500 transition z-10 p-1" title="Delete">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>

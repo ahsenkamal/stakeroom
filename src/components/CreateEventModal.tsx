@@ -14,7 +14,6 @@ export default function CreateEventModal({ onClose, onCreate }: Props) {
   const [type, setType] = useState<EventType>("BETTING");
   const [stakeAmount, setStakeAmount] = useState("");
   
-  // New State: Duration (default 24 hours in ms)
   const [duration, setDuration] = useState(24 * 60 * 60 * 1000); 
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -29,7 +28,7 @@ export default function CreateEventModal({ onClose, onCreate }: Props) {
       stakeAmount: type === 'STAKING' ? stakeAmount : undefined,
       poolTotal: "0",
       createdAt: Date.now(),
-      endsAt: Date.now() + duration, // Calculate End Time
+      endsAt: Date.now() + duration,
       participants: [], 
     };
 
@@ -51,7 +50,6 @@ export default function CreateEventModal({ onClose, onCreate }: Props) {
             />
           </div>
 
-          {/* DURATION SELECTOR */}
           <div>
             <label className="block text-gray-400 text-sm mb-1">Duration</label>
             <select 
@@ -78,7 +76,7 @@ export default function CreateEventModal({ onClose, onCreate }: Props) {
               <input required type="number" step="0.0001" className="w-full bg-black/40 border border-purple-500/50 rounded-lg p-3 text-white focus:border-purple-500 outline-none" value={stakeAmount} onChange={(e) => setStakeAmount(e.target.value)} />
             </div>
           ) : (
-             <div className="p-4 bg-blue-900/10 rounded-lg border border-blue-900/30 text-sm text-blue-200">ℹ️ Users will choose their own wager amount.</div>
+             <div className="p-4 bg-blue-900/10 rounded-lg border border-blue-900/30 text-sm text-blue-200">️Users will choose their own wager amount.</div>
           )}
 
           <div className="flex gap-3 mt-6">
