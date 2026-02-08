@@ -24,11 +24,6 @@ export default function ActionModal({ event, onClose, onUpdate }: Props) {
   const handleInteract = async () => {
     if (!walletClient || !address) return;
     
-    if (event.participants.includes(address)) {
-       setStatus("You have already joined this event!");
-       return;
-    }
-
     setIsProcessing(true);
     setStatus("Connecting to Yellow Network...");
 

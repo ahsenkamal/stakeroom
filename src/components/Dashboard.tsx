@@ -3,30 +3,32 @@ import { useState, useEffect } from "react";
 import { useAccount } from "wagmi";
 import CreateEventModal from "./CreateEventModal";
 import ActionModal from "./ActionModal";
-import CreatorBadge from "./CreatorBadge"; 
+import ParticipantsModal from "./ParticipantsModal";
+import CreatorBadge from "./CreatorBadge";
 import { Event } from "../types";
 import { supabase } from "../utils/supabase";
 
 const getTimeRemaining = (endsAt: number) => {
   const total = endsAt - Date.now();
   if (total <= 0) return "ENDED";
-  
+
   const days = Math.floor(total / (1000 * 60 * 60 * 24));
   const hours = Math.floor((total / (1000 * 60 * 60)) % 24);
   const minutes = Math.floor((total / 1000 / 60) % 60);
 
   if (days > 0) return `${days}d ${hours}h left`;
   if (hours > 0) return `${hours}h ${minutes}m left`;
-  return `${minutes}m left`; 
+  return `${minutes}m left`;
 };
 
 export default function Dashboard() {
   const { address } = useAccount();
   const [events, setEvents] = useState<Event[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [viewMode, setViewMode] = useState<'ALL' | 'MY'>('ALL'); 
+  const [viewMode, setViewMode] = useState<'ALL' | 'MY'>('ALL');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [participantsEvent, setParticipantsEvent] = useState<Event | null>(null);
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
@@ -34,30 +36,30 @@ export default function Dashboard() {
     return () => clearInterval(timer);
   }, []);
 
-//   useEffect(() => {
-//     setEvents([
-//       { 
-//         id: "evt_101", 
-//         title: "ETH will go to 4000", 
-//         type: "BETTING", 
-//         creatorAddress: "0x123...mock", 
-//         poolTotal: "12.5", 
-//         createdAt: Date.now(), 
-//         endsAt: Date.now() + 72800000,
-//         participants: [] 
-//       },
-//       { 
-//         id: "evt_102", 
-//         title: "Exclusive pool event entry", 
-//         type: "STAKING", 
-//         creatorAddress: "0x123...mock", 
-//         stakeAmount: "0.1", 
-//         createdAt: Date.now(), 
-//         endsAt: Date.now() + 72800000,
-//         participants: [] 
-//       },
-//     ]);
-//   }, [address]);
+  //   useEffect(() => {
+  //     setEvents([
+  //       { 
+  //         id: "evt_101", 
+  //         title: "ETH will go to 4000", 
+  //         type: "BETTING", 
+  //         creatorAddress: "0x123...mock", 
+  //         poolTotal: "12.5", 
+  //         createdAt: Date.now(), 
+  //         endsAt: Date.now() + 72800000,
+  //         participants: [] 
+  //       },
+  //       { 
+  //         id: "evt_102", 
+  //         title: "Exclusive pool event entry", 
+  //         type: "STAKING", 
+  //         creatorAddress: "0x123...mock", 
+  //         stakeAmount: "0.1", 
+  //         createdAt: Date.now(), 
+  //         endsAt: Date.now() + 72800000,
+  //         participants: [] 
+  //       },
+  //     ]);
+  //   }, [address]);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -73,7 +75,7 @@ export default function Dashboard() {
       if (eventsData) {
         const formattedEvents = eventsData.map(ev => ({
           ...ev,
-          createdAt: Number(ev.created_at), 
+          createdAt: Number(ev.created_at),
           endsAt: Number(ev.ends_at),
           creatorAddress: ev.creator_address,
           stakeAmount: ev.stake_amount,
@@ -97,7 +99,7 @@ export default function Dashboard() {
         { event: '*', schema: 'public', table: 'events' },
         (payload) => {
           console.log('Change received!', payload);
-          fetchEvents(); 
+          fetchEvents();
         }
       )
       .subscribe();
@@ -114,7 +116,7 @@ export default function Dashboard() {
 
   const filteredEvents = events.filter((ev) => {
     const matchesSearch = ev.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const isMyEvent = ev.creatorAddress === address || (address && ev.participants.includes(address));
+    const isMyEvent = ev.creatorAddress === address || (address && ev.participants.some(p => p.user_address === address));
     const matchesView = viewMode === 'ALL' ? true : isMyEvent;
     return matchesSearch && matchesView;
   });
@@ -126,7 +128,7 @@ export default function Dashboard() {
 
   return (
     <div className="w-full max-w-6xl mx-auto px-6 py-10">
-      
+
       <div className="flex flex-col gap-6 mb-10">
         <div className="flex justify-between gap-4">
           <input
@@ -150,10 +152,9 @@ export default function Dashboard() {
 
           return (
             <div key={event.id} className={`bg-gray-900 border p-6 rounded-2xl relative group transition ${isExpired ? 'border-gray-800 opacity-70' : 'border-gray-800 hover:border-gray-600'}`}>
-              
-              <div className={`absolute top-4 right-4 text-[10px] font-bold px-2 py-1 rounded border ${
-                isExpired ? 'bg-red-500/10 text-red-500 border-red-500/20' : 'bg-green-500/10 text-green-400 border-green-500/20'
-              }`}>
+
+              <div className={`absolute top-4 right-4 text-[10px] font-bold px-2 py-1 rounded border ${isExpired ? 'bg-red-500/10 text-red-500 border-red-500/20' : 'bg-green-500/10 text-green-400 border-green-500/20'
+                }`}>
                 {timeLeft}
               </div>
 
@@ -164,28 +165,32 @@ export default function Dashboard() {
               )}
 
               <div className="flex justify-between items-start mb-3">
-                 <span className={`text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider ${event.type === 'STAKING' ? 'bg-purple-900/30 text-purple-400' : 'bg-blue-900/30 text-blue-400'}`}>{event.type}</span>
+                <span className={`text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider ${event.type === 'STAKING' ? 'bg-purple-900/30 text-purple-400' : 'bg-blue-900/30 text-blue-400'}`}>{event.type}</span>
               </div>
 
               <h3 className="text-xl font-bold text-white mb-2 line-clamp-1">{event.title}</h3>
               <div className="mb-4"><CreatorBadge address={event.creatorAddress} /></div>
 
-              <div className="bg-black/30 rounded-lg p-3 mb-6">
+              <div className="bg-black/30 rounded-lg p-3 mb-4">
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-400">{event.type === 'STAKING' ? 'Stake' : 'Pool'}</span>
                   <span className="text-white font-mono font-bold">{event.type === 'STAKING' ? event.stakeAmount : event.poolTotal} ETH</span>
                 </div>
-                <div className="text-xs text-gray-500 text-right">{event.participants.length} players</div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setParticipantsEvent(event); }}
+                  className="text-xs text-blue-400 hover:text-blue-300 text-right w-full transition"
+                >
+                  {event.participants.length} participants →
+                </button>
               </div>
 
-              <button 
+              <button
                 onClick={() => !isExpired && setSelectedEvent(event)}
                 disabled={isExpired}
-                className={`w-full py-3 rounded-xl font-semibold transition border ${
-                  isExpired 
-                    ? 'bg-gray-800 text-gray-500 border-gray-800 cursor-not-allowed' 
+                className={`w-full py-3 rounded-xl font-semibold transition border ${isExpired
+                    ? 'bg-gray-800 text-gray-500 border-gray-800 cursor-not-allowed'
                     : 'bg-gray-800 hover:bg-gray-700 text-white border-gray-700 hover:border-gray-500'
-                }`}
+                  }`}
               >
                 {isExpired ? 'Event Ended' : (event.type === 'STAKING' ? 'Stake Now' : 'Place Bet')}
               </button>
@@ -196,6 +201,7 @@ export default function Dashboard() {
 
       {isCreateModalOpen && <CreateEventModal onClose={() => setIsCreateModalOpen(false)} onCreate={(ev) => setEvents([ev, ...events])} />}
       {selectedEvent && <ActionModal event={selectedEvent} onClose={() => setSelectedEvent(null)} onUpdate={handleEventUpdate} />}
+      {participantsEvent && <ParticipantsModal participants={participantsEvent.participants} eventTitle={participantsEvent.title} onClose={() => setParticipantsEvent(null)} />}
     </div>
   );
 }
