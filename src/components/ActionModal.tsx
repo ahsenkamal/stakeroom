@@ -4,6 +4,7 @@ import { useAccount, useWalletClient } from "wagmi";
 import { parseEther } from "viem";
 import { YellowService } from "../services/yellow";
 import { Event } from "../types";
+import { supabase } from "../utils/supabase"
 
 interface Props {
   event: Event;
@@ -24,7 +25,7 @@ export default function ActionModal({ event, onClose, onUpdate }: Props) {
     if (!walletClient || !address) return;
     
     if (event.participants.includes(address)) {
-       setStatus("⚠️ You have already joined this event!");
+       setStatus("You have already joined this event!");
        return;
     }
 
@@ -46,6 +47,13 @@ export default function ActionModal({ event, onClose, onUpdate }: Props) {
       const amountWei = parseEther(amountEth).toString();
       const side = event.type === 'STAKING' ? 'STAKE' : (selectedSide || 'YES');
 
+      await supabase.from('participants').insert({
+        event_id: event.id,
+        user_address: address,
+        amount: amountEth,
+        side: event.type === 'STAKING' ? 'STAKE' : selectedSide
+        });
+
       await yellow.joinEventSession(
         amountWei, 
         side as 'YES' | 'NO' | 'STAKE', 
@@ -55,20 +63,24 @@ export default function ActionModal({ event, onClose, onUpdate }: Props) {
 
       setStatus("✅ Joined Successfully!");
       
-      setTimeout(() => {
-        const addedVal = parseFloat(amountEth);
-        const currentPool = parseFloat(event.poolTotal || "0");
+      await supabase
+        .from('events')
+        .update({ pool_total: (parseFloat(event.poolTotal || "0") + parseFloat(amountEth)).toFixed(4)}) // Add pool_yes/pool_no updates here too
+        .eq('id', event.id);
+    //   setTimeout(() => {
+    //     const addedVal = parseFloat(amountEth);
+    //     const currentPool = parseFloat(event.poolTotal || "0");
         
-        const updatedEvent: Event = {
-          ...event,
-          poolTotal: (currentPool + addedVal).toFixed(4),
-          participants: [...event.participants, address]
-        };
+    //     const updatedEvent: Event = {
+    //       ...event,
+    //       poolTotal: (currentPool + addedVal).toFixed(4),
+    //       participants: [...event.participants, address]
+    //     };
 
-        onUpdate(updatedEvent);
-        setIsProcessing(false);
-        yellow.disconnect();
-      }, 1000);
+    //     onUpdate(updatedEvent);
+    //     setIsProcessing(false);
+    //     yellow.disconnect();
+    //   }, 1000);
 
     } catch (error) {
       console.error(error);

@@ -5,6 +5,7 @@ import CreateEventModal from "./CreateEventModal";
 import ActionModal from "./ActionModal";
 import CreatorBadge from "./CreatorBadge"; 
 import { Event } from "../types";
+import { supabase } from "../utils/supabase";
 
 const getTimeRemaining = (endsAt: number) => {
   const total = endsAt - Date.now();
@@ -33,30 +34,78 @@ export default function Dashboard() {
     return () => clearInterval(timer);
   }, []);
 
+//   useEffect(() => {
+//     setEvents([
+//       { 
+//         id: "evt_101", 
+//         title: "ETH will go to 4000", 
+//         type: "BETTING", 
+//         creatorAddress: "0x123...mock", 
+//         poolTotal: "12.5", 
+//         createdAt: Date.now(), 
+//         endsAt: Date.now() + 72800000,
+//         participants: [] 
+//       },
+//       { 
+//         id: "evt_102", 
+//         title: "Exclusive pool event entry", 
+//         type: "STAKING", 
+//         creatorAddress: "0x123...mock", 
+//         stakeAmount: "0.1", 
+//         createdAt: Date.now(), 
+//         endsAt: Date.now() + 72800000,
+//         participants: [] 
+//       },
+//     ]);
+//   }, [address]);
+
   useEffect(() => {
-    setEvents([
-      { 
-        id: "evt_101", 
-        title: "ETH will go to 4000", 
-        type: "BETTING", 
-        creatorAddress: "0x123...mock", 
-        poolTotal: "12.5", 
-        createdAt: Date.now(), 
-        endsAt: Date.now() + 72800000,
-        participants: [] 
-      },
-      { 
-        id: "evt_102", 
-        title: "Exclusive pool event entry", 
-        type: "STAKING", 
-        creatorAddress: "0x123...mock", 
-        stakeAmount: "0.1", 
-        createdAt: Date.now(), 
-        endsAt: Date.now() + 72800000,
-        participants: [] 
-      },
-    ]);
-  }, [address]);
+    const fetchEvents = async () => {
+      const { data: eventsData } = await supabase
+        .from('events')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      const { data: participantsData } = await supabase
+        .from('participants')
+        .select('*');
+
+      if (eventsData) {
+        const formattedEvents = eventsData.map(ev => ({
+          ...ev,
+          createdAt: Number(ev.created_at), 
+          endsAt: Number(ev.ends_at),
+          creatorAddress: ev.creator_address,
+          stakeAmount: ev.stake_amount,
+          poolTotal: ev.pool_total,
+          poolYes: ev.pool_yes,
+          poolNo: ev.pool_no,
+          participants: participantsData
+            ? participantsData.filter((p: any) => p.event_id === ev.id)
+            : []
+        }));
+        setEvents(formattedEvents);
+      }
+    };
+
+    fetchEvents();
+
+    const channel = supabase
+      .channel('stakeroom-live')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'events' },
+        (payload) => {
+          console.log('Change received!', payload);
+          fetchEvents(); 
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const handleEventUpdate = (updatedEvent: Event) => {
     setEvents(prev => prev.map(ev => (ev.id === updatedEvent.id ? updatedEvent : ev)));

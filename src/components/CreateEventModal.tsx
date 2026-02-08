@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useAccount } from "wagmi";
+import { supabase } from "../utils/supabase"; 
 import { Event, EventType } from "../types";
 
 interface Props {
@@ -13,33 +14,65 @@ export default function CreateEventModal({ onClose, onCreate }: Props) {
   const [title, setTitle] = useState("");
   const [type, setType] = useState<EventType>("BETTING");
   const [stakeAmount, setStakeAmount] = useState("");
-  
   const [duration, setDuration] = useState(24 * 60 * 60 * 1000); 
+  const [isCreating, setIsCreating] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !address) return;
 
+    setIsCreating(true);
+
+    const newEventId = `evt_${Math.floor(Math.random() * 90000) + 10000}`;
+    const now = Date.now();
+    const endsAt = now + duration;
+
     const newEvent: Event = {
-      id: `evt_${Math.floor(Math.random() * 9000) + 1000}`,
+      id: newEventId,
       title,
       type,
       creatorAddress: address,
       stakeAmount: type === 'STAKING' ? stakeAmount : undefined,
       poolTotal: "0",
-      createdAt: Date.now(),
-      endsAt: Date.now() + duration,
+      createdAt: now,
+      endsAt: endsAt,
       participants: [], 
     };
 
-    onCreate(newEvent);
-    onClose();
+    try {
+      const { error } = await supabase
+        .from('events')
+        .insert({
+          id: newEventId,
+          title: title,
+          type: type,
+          creator_address: address,
+          created_at: now,
+          ends_at: endsAt,
+          stake_amount: type === 'STAKING' ? stakeAmount : null,
+          pool_total: "0",
+        });
+
+      if (error) throw error;
+
+      onCreate(newEvent);
+      onClose();
+
+    } catch (error) {
+      console.error("Error creating event:", error);
+      alert("Failed to create event. Please try again.");
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="bg-gray-900 border border-gray-700 w-full max-w-md p-6 rounded-2xl shadow-2xl">
+      <div className="bg-gray-900 border border-gray-700 w-full max-w-md p-6 rounded-2xl shadow-2xl relative">
+        <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-white">✕</button>
+        
         <h2 className="text-2xl font-bold text-white mb-6">Create New Event</h2>
+        
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-gray-400 text-sm mb-1">Event Name</label>
@@ -76,12 +109,18 @@ export default function CreateEventModal({ onClose, onCreate }: Props) {
               <input required type="number" step="0.0001" className="w-full bg-black/40 border border-purple-500/50 rounded-lg p-3 text-white focus:border-purple-500 outline-none" value={stakeAmount} onChange={(e) => setStakeAmount(e.target.value)} />
             </div>
           ) : (
-             <div className="p-4 bg-blue-900/10 rounded-lg border border-blue-900/30 text-sm text-blue-200">️Users will choose their own wager amount.</div>
+             <div className="p-4 bg-blue-900/10 rounded-lg border border-blue-900/30 text-sm text-blue-200">ℹ️ Users will choose their own wager amount.</div>
           )}
 
           <div className="flex gap-3 mt-6">
             <button type="button" onClick={onClose} className="flex-1 py-3 text-gray-400 hover:text-white hover:bg-gray-800 rounded-xl transition">Cancel</button>
-            <button type="submit" className="flex-1 py-3 bg-white text-black font-bold rounded-xl hover:bg-gray-200 transition">Create</button>
+            <button 
+              type="submit" 
+              disabled={isCreating}
+              className="flex-1 py-3 bg-white text-black font-bold rounded-xl hover:bg-gray-200 transition disabled:bg-gray-500 disabled:text-gray-300"
+            >
+              {isCreating ? "Creating..." : "Create Event"}
+            </button>
           </div>
         </form>
       </div>
