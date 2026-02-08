@@ -8,4 +8,5 @@ export interface Event {
   stakeAmount?: string; 
   poolTotal?: string;
   createdAt: number;
+  participants: string[];
 }

@@ -1,7 +1,6 @@
-// components/CreateEventModal.tsx
 "use client";
 import { useState } from "react";
-import { useAccount } from "wagmi"; // Import hook
+import { useAccount } from "wagmi";
 import { Event, EventType } from "../types";
 
 interface Props {
@@ -10,14 +9,14 @@ interface Props {
 }
 
 export default function CreateEventModal({ onClose, onCreate }: Props) {
-  const { address } = useAccount(); // Get current user
+  const { address } = useAccount();
   const [title, setTitle] = useState("");
   const [type, setType] = useState<EventType>("BETTING");
   const [stakeAmount, setStakeAmount] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !address) return; // Guard clause
+    if (!title || !address) return;
 
     const newEvent: Event = {
       id: `evt_${Math.floor(Math.random() * 9000) + 1000}`,
@@ -27,6 +26,7 @@ export default function CreateEventModal({ onClose, onCreate }: Props) {
       stakeAmount: type === 'STAKING' ? stakeAmount : undefined,
       poolTotal: "0",
       createdAt: Date.now(),
+      participants: [], // Start empty
     };
 
     onCreate(newEvent);
@@ -38,8 +38,7 @@ export default function CreateEventModal({ onClose, onCreate }: Props) {
       <div className="bg-gray-900 border border-gray-700 w-full max-w-md p-6 rounded-2xl shadow-2xl">
         <h2 className="text-2xl font-bold text-white mb-6">Create New Event</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Same form fields as before... */}
-            <div>
+          <div>
             <label className="block text-gray-400 text-sm mb-1">Event Name</label>
             <input 
               required type="text" placeholder="e.g. Will ETH flip BTC?" 
