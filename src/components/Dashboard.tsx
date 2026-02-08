@@ -19,7 +19,7 @@ export default function Dashboard() {
     setEvents([
       { 
         id: "evt_101", 
-        title: "ETH to flip BTC", 
+        title: "ETH will go 4000", 
         type: "BETTING", 
         creatorAddress: "0x123...mock", 
         poolTotal: "12.5", 
@@ -28,7 +28,7 @@ export default function Dashboard() {
       },
       { 
         id: "evt_102", 
-        title: "High Rollers Room", 
+        title: "Exclusive pool game entry", 
         type: "STAKING", 
         creatorAddress: address as string || "0x000", 
         stakeAmount: "50", 
