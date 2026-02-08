@@ -22,8 +22,8 @@ export default function Home() {
     <main className="min-h-screen bg-black text-white">
       
       <nav className="border-b border-gray-800 p-4 flex justify-between items-center bg-gray-900/50 sticky top-0 backdrop-blur-md z-30">
-        <h1 className="text-2xl font-black tracking-tighter bg-gradient-to-r from-blue-400 to-purple-600 text-transparent bg-clip-text">
-          STAKEROOM
+        <h1 className="text-2xl font-black tracking-tighter bg-gradient-to-r from-yellow-400 to-orange-600 text-transparent bg-clip-text">
+          stakeroom
         </h1>
         
         {/* Pass the handler */}
